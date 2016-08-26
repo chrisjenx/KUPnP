@@ -6,4 +6,4 @@
 
 - There will be no distribution or support until I hit a stable point. 
 - API will change regularly. 
-- Only use for reference until I start hiting versions.
+- Only use for reference until I start hitting versions.
