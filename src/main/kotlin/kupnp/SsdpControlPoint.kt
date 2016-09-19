@@ -1,17 +1,22 @@
 package kupnp
 
 import okio.ByteString
+import rx.AsyncEmitter
 import rx.Observable
+import rx.Observable.concat
+import rx.Observable.fromEmitter
 import rx.exceptions.Exceptions
 import rx.observables.ConnectableObservable
 import rx.schedulers.Schedulers
 import java.net.*
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by chris on 16/04/2016.
  * For project kupnp
  */
-class Ssdp(ssdpMessage: SsdpMessage) {
+class SsdpControlPoint(ssdpMessage: SsdpMessage) {
 
     private val request: ByteString
 
@@ -28,11 +33,11 @@ class Ssdp(ssdpMessage: SsdpMessage) {
                 .using({
                     createSockets()
                 }, { sockets ->
-                    val sender = createSender(sockets.map { it.datagramSocket })
-                    val receivers = sockets.map { createReceiver(it.datagramSocket) }
+                    val sender = createSender(sockets.map { it.socket })
+                    val receivers = sockets.map { createReceiver(it.socket) }
                     bind(sockets).flatMap { Observable.merge(receivers).mergeWith(sender.doOnSubscribe { sender.connect() }) }
                 }, {
-                    it.forEach { it.datagramSocket.closeQuietly() }
+                    it.forEach { it.socket.closeQuietly() }
                 })
     }
 
@@ -57,16 +62,15 @@ class Ssdp(ssdpMessage: SsdpMessage) {
                 .filter { it.address is Inet4Address }
                 .filter { it.address.isSiteLocalAddress }
 
-        return localAddresss.map {
-            AddressAndSocket(it.address, MulticastSocket(null))
-        }
+        // Create a new Socket for each Address, most devices are multi-honed these days.
+        return localAddresss.map { AddressAndSocket(it.address, MulticastSocket(null)) }
     }
 
     internal fun bind(sockets: List<AddressAndSocket>): Observable<Unit> {
         return Observable.fromCallable {
             sockets.forEach {
                 log("Creating bound socket (for datagram input/output) on: ${it.address}")
-                it.datagramSocket.bind(InetSocketAddress(it.address, 0))
+                it.socket.bind(InetSocketAddress(it.address, 0))
             }
         }
     }
@@ -99,8 +103,12 @@ class Ssdp(ssdpMessage: SsdpMessage) {
                 .subscribeOn(Schedulers.newThread())
     }
 
+    /**
+     * Create a Observable that will send the SSDP Message over the sockets we have bound. This will fire the broadcast
+     * 3 times at random intervals no more than 1/2 the timeout value of the SSDP message.
+     */
     internal fun createSender(sockets: List<DatagramSocket>): ConnectableObservable<ByteString> {
-        return Observable
+        val sendMessage = Observable
                 .fromCallable {
                     sockets.forEach {
                         try {
@@ -116,6 +124,19 @@ class Ssdp(ssdpMessage: SsdpMessage) {
                     }
                     return@fromCallable null
                 }
+
+        return concat(
+                fromEmitter<Observable<Long>>({ e ->
+                    val r = Random()
+                    // Fire first message straight away
+                    e.onNext(Observable.just(0L))
+                    for (i in 0..1) {
+                        val rand = 200 + r.nextInt(1300)
+                        e.onNext(Observable.timer(rand.toLong(), TimeUnit.MILLISECONDS))
+                    }
+                    e.onCompleted()
+                }, AsyncEmitter.BackpressureMode.BUFFER))
+                .flatMap { sendMessage }
                 .subscribeOn(Schedulers.io())
                 .ignoreElements()
                 .cast(ByteString::class.java)
@@ -130,7 +151,7 @@ class Ssdp(ssdpMessage: SsdpMessage) {
         }
     }
 
-    internal data class AddressAndSocket(val address: InetAddress, val datagramSocket: DatagramSocket)
+    internal data class AddressAndSocket(val address: InetAddress, val socket: DatagramSocket)
 
     companion object {
         internal const val SSDP_PORT = 1900

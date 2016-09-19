@@ -2,7 +2,7 @@ group 'uk.co.chrisjenx.kupnp'
 version '1.0.0'
 
 buildscript {
-    ext.kotlin_version = "1.0.4-eap-100"
+    ext.kotlin_version = "1.0.4-eap-118"
     repositories {
         mavenCentral()
         maven { url "https://dl.bintray.com/kotlin/kotlin-eap/" }
@@ -22,7 +22,7 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile 'com.squareup.okio:okio:1.9.0'
-    compile 'io.reactivex:rxjava:1.1.9'
+    compile 'io.reactivex:rxjava:1.2.0'
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     compile 'com.squareup.retrofit2:retrofit:2.1.0'
     compile 'com.squareup.retrofit2:retrofit-adapters:2.1.0'
@@ -33,5 +33,5 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
+    gradleVersion = '3.1'
 }

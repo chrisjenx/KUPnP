@@ -11,7 +11,7 @@ class SSDPService {
 
     companion object {
         fun msearch(): Observable<String> {
-            return Ssdp(SsdpMessage.search())
+            return SsdpControlPoint(SsdpMessage.search())
                     .start()
                     .subscribeOn(Schedulers.io())
                     .map {

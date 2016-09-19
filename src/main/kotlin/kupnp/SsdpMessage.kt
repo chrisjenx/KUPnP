@@ -44,12 +44,12 @@ class SsdpMessage {
     }
 
     companion object {
-        private const val SSDP_HOST = "${Ssdp.SSDP_IP}:${Ssdp.SSDP_PORT}"
+        private const val SSDP_HOST = "${SsdpControlPoint.SSDP_IP}:${SsdpControlPoint.SSDP_PORT}"
         private const val SSDP_DISCOVER = "\"ssdp:discover\""
         private const val HEADER_SEARCH_TEXT = "ST"
-        private const val HEADER_MX = "MX"
-        private const val HEADER_HOST = "HOST"
-        private const val HEADER_MAN = "MAN"
+        const val HEADER_MX = "MX"
+        const val HEADER_HOST = "HOST"
+        const val HEADER_MAN = "MAN"
         private const val NL = "\r\n"
 
         /**
