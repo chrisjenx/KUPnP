@@ -46,11 +46,32 @@ class SsdpMessage {
     companion object {
         private const val SSDP_HOST = "${SsdpControlPoint.SSDP_IP}:${SsdpControlPoint.SSDP_PORT}"
         private const val SSDP_DISCOVER = "\"ssdp:discover\""
-        private const val HEADER_SEARCH_TEXT = "ST"
+        private const val NL = "\r\n"
+        /**
+         *  Field value contains Search Target. Single URI. The response sent by the device depends on the field value of the
+         *  ST header field that was sent in the request. In some cases, the device MUST send multiple response messages as follows. If
+         *  the received ST field value was:
+         */
+        const val HEADER_SEARCH_TEXT = "ST"
         const val HEADER_MX = "MX"
         const val HEADER_HOST = "HOST"
         const val HEADER_MAN = "MAN"
-        private const val NL = "\r\n"
+        /**
+         *  Field value contains a URL to the UPnP description of the root device. Normally the host portion contains a
+         *  literal IP address rather than a domain name in unmanaged networks. Specified by UPnP vendor.
+         *  Single absolute URL (see RFC 3986).
+         */
+        const val HEADER_LOCATION = "LOCATION"
+        /**
+         *  Specified by UPnP vendor. String. Field value MUST begin with the following “product tokens” (defined by
+         *  HTTP/1.1). The first product token identifes the operating system in the form OS name/OS version, the second token
+         *  represents the UPnP version and MUST be UPnP/1.1, and the third token identifes the product using the form
+         *  product name/product version. For example, “SERVER: unix/5.1 UPnP/1.1 MyProduct/1.0”. Control points MUST be
+         *  prepared to accept a higher minor version number of the UPnP version than the control point itself implements. For
+         *  example, control points implementing UDA version 1.0 will be able to interoperate with devices implementing
+         *  UDA version 1.1.
+         */
+        const val HEADER_SERVER = "SERVER"
 
         /**
          * Create M-SEARCH multicast packet with the applied search string.
