@@ -20,17 +20,17 @@ class SsdpMessage {
     }
 
     internal constructor(bytes: ByteString) {
-        val lines = bytes.utf8().split(NL)
+        val lines = bytes.utf8().split("\n")
 
-        when (lines.first().trim()) {
-            TYPE.M_SEARCH.headerLine -> type
-            TYPE.OK.headerLine -> type
+        type = when (lines.first().trim()) {
+            TYPE.M_SEARCH.headerLine -> TYPE.M_SEARCH
+            TYPE.OK.headerLine -> TYPE.OK
             else -> TYPE.UNKNOWN
         }
         lines.subList(1, lines.size).forEach { value ->
             val keyValue = value.split(':', limit = 2)
             if (value.length >= 2) {
-                headers.put(keyValue[0].toUpperCase(), keyValue[1])
+                headers.put(keyValue[0].toUpperCase(), keyValue[1].trim())
             }
         }
     }
@@ -43,6 +43,40 @@ class SsdpMessage {
             }
             append(NL)
         }.let { ByteString.encodeUtf8(it) }
+    }
+
+    /**
+     * Based on the UPnP 1.1 spec, this will check for required headers being set for the current Message Type.
+     */
+    fun isValid(): Boolean {
+        var valid = true
+        type.requiredHeaders.forEach {
+            if (!headers.containsKey(it)) {
+                valid = false
+                return@forEach
+            }
+        }
+        return valid
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other?.javaClass != javaClass) return false
+
+        other as SsdpMessage
+
+        // We only Compare Type and USN right now, so doesn't really work for discovery mechanisms
+        if (type != other.type) return false
+        if (headers[HEADER_USN] != other.headers[HEADER_USN]) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var code = 1
+        code = 31 * code + type.hashCode()
+        code = 31 * code + headers.getOrElse(HEADER_USN, { "" }).hashCode()
+        return code
     }
 
     companion object {
@@ -65,7 +99,24 @@ class SsdpMessage {
          */
         const val HEADER_MX = "MX"
         const val HEADER_HOST = "HOST"
+        /**
+         * REQUIRED by HTTP Extension Framework. Unlike the NTS and ST field values, the field value of the MAN header field is
+         * enclosed in double quotes; it defines the scope (namespace) of the extension. MUST be "ssdp:discover".
+         */
         const val HEADER_MAN = "MAN"
+        /**
+         *  Field value MUST have the max-age directive (“max-age=”) followed by an integer that specifies the number of
+         *  seconds the advertisement is valid. After this duration, control points SHOULD assume the device (or service) is no longer
+         *  available; as long as a control point has received at least one advertisement that is still valid from a root device, any of its
+         *  embedded devices or any of its services, then the control point can assume that all are available. The number of seconds
+         *  SHOULD be greater than or equal to 1800 seconds (30 minutes), although exceptions are defined in the text above. Specified
+         *  by UPnP vendor. Other directives MUST NOT be sent and MUST be ignored when received.
+         */
+        const val HEADER_CACHE_CONTROL = "CACHE-CONTROL"
+        /**
+         * For backwards compatibility with UPnP 1.0. (Header field name only; no field value.)
+         */
+        const val HEADER_EXT = "EXT"
         /**
          *  Field value contains a URL to the UPnP description of the root device. Normally the host portion contains a
          *  literal IP address rather than a domain name in unmanaged networks. Specified by UPnP vendor.
@@ -82,6 +133,11 @@ class SsdpMessage {
          *  UDA version 1.1.
          */
         const val HEADER_SERVER = "SERVER"
+        /**
+         *  Field value contains Unique Service Name. (See list of required field values for the USN header field in NOTIFY
+         *  with ssdp:alive above.) Single URI.
+         */
+        const val HEADER_USN = "USN"
 
         /**
          * Create M-SEARCH multicast packet with the applied search string.
@@ -101,12 +157,12 @@ class SsdpMessage {
          */
         fun fromPacket(source: ByteString) = SsdpMessage(source)
 
-        enum class TYPE(val headerLine: String) {
-            M_SEARCH("M-SEARCH * HTTP/1.1"),
-            OK("HTTP/1.1 200 OK"),
-            UNKNOWN("")
-        }
+    }
 
+    enum class TYPE(val headerLine: String, val requiredHeaders: Array<String> = emptyArray<String>()) {
+        M_SEARCH("M-SEARCH * HTTP/1.1", arrayOf(HEADER_HOST, HEADER_MAN, HEADER_MX, HEADER_SEARCH_TEXT)),
+        OK("HTTP/1.1 200 OK", arrayOf(HEADER_CACHE_CONTROL, HEADER_EXT, HEADER_LOCATION, HEADER_SERVER, HEADER_SEARCH_TEXT, HEADER_USN)),
+        UNKNOWN("")
     }
 
 }
