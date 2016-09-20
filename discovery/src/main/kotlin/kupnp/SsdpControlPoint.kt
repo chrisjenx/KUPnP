@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
  * Created by chris on 16/04/2016.
  * For project kupnp
  */
-class SsdpControlPoint(ssdpMessage: SsdpMessage) {
+class SsdpControlPoint(private val ssdpMessage: SsdpMessage) {
 
     private val request: ByteString
 
@@ -86,7 +86,9 @@ class SsdpControlPoint(ssdpMessage: SsdpMessage) {
                     while (!it.isUnsubscribed) {
                         try {
                             socket.receive(receivePacket)
-                            it.onNext(ByteString.of(*receivePacket.data))
+                            it.onNext(ByteString.of(receivePacket.data, receivePacket.offset, receivePacket.length))
+                            // Reset packet size
+                            receivePacket.length = receiveData.size
                         } catch (se: SocketException) {
                             it.onCompleted()
                             break
@@ -131,7 +133,7 @@ class SsdpControlPoint(ssdpMessage: SsdpMessage) {
                     // Fire first message straight away
                     e.onNext(Observable.just(0L))
                     for (i in 0..1) {
-                        val rand = 200 + r.nextInt(1300)
+                        val rand = 200 + r.nextInt(ssdpMessage.mx * 1000)
                         e.onNext(Observable.timer(rand.toLong(), TimeUnit.MILLISECONDS))
                     }
                     e.onCompleted()

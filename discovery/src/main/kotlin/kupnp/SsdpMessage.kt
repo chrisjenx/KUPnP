@@ -10,6 +10,8 @@ import kotlin.properties.Delegates
 class SsdpMessage {
 
     val headers = mutableMapOf<String, String>()
+    val mx: Int
+        get() = headers.getOrElse(HEADER_MX, { DEFAULT_MX.toString() }).toInt()
     var type: TYPE by Delegates.notNull<TYPE>()
         private set
 
@@ -28,7 +30,7 @@ class SsdpMessage {
         lines.subList(1, lines.size).forEach { value ->
             val keyValue = value.split(':', limit = 2)
             if (value.length >= 2) {
-                headers.put(keyValue[0], keyValue[1])
+                headers.put(keyValue[0].toUpperCase(), keyValue[1])
             }
         }
     }
@@ -44,6 +46,7 @@ class SsdpMessage {
     }
 
     companion object {
+        private const val DEFAULT_MX = 3
         private const val SSDP_HOST = "${SsdpControlPoint.SSDP_IP}:${SsdpControlPoint.SSDP_PORT}"
         private const val SSDP_DISCOVER = "\"ssdp:discover\""
         private const val NL = "\r\n"
@@ -53,6 +56,13 @@ class SsdpMessage {
          *  the received ST field value was:
          */
         const val HEADER_SEARCH_TEXT = "ST"
+        /**
+         *  Field value contains maximum wait time in seconds. MUST be greater than or equal to 1 and SHOULD be less than
+         *  5 inclusive. Device responses SHOULD be delayed a random duration between 0 and this many seconds to balance load for
+         *  the control point when it processes responses. This value MAY be increased if a large number of devices are expected to
+         *  respond. The MX field value SHOULD NOT be increased to accommodate network characteristics such as latency or
+         *  propagation delay (for more details, see the explanation below). Specified by UPnP vendor. Integer.
+         */
         const val HEADER_MX = "MX"
         const val HEADER_HOST = "HOST"
         const val HEADER_MAN = "MAN"
@@ -77,14 +87,18 @@ class SsdpMessage {
          * Create M-SEARCH multicast packet with the applied search string.
          *
          * @param searchString This is the ST header, Default search string is "upnp:rootdevice"
+         * @param mx this is the maximum wait time a UPnP device will wait before sending a respond 1..5 seconds.
          */
-        fun search(searchString: String = "upnp:rootdevice") = SsdpMessage(TYPE.M_SEARCH).apply {
+        fun search(searchString: String = "upnp:rootdevice", mx: Int = DEFAULT_MX) = SsdpMessage(TYPE.M_SEARCH).apply {
             headers.put(HEADER_HOST, SSDP_HOST)
             headers.put(HEADER_MAN, SSDP_DISCOVER)
-            headers.put(HEADER_MX, 3.toString())
+            headers.put(HEADER_MX, mx.toString())
             headers.put(HEADER_SEARCH_TEXT, searchString)
         }
 
+        /**
+         * Turns a packet into a SSDP Message
+         */
         fun fromPacket(source: ByteString) = SsdpMessage(source)
 
         enum class TYPE(val headerLine: String) {
