@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<root xmlns="urn:schemas-upnp-org:device-1-0">
+    <specVersion>
+        <major>1</major>
+        <minor>0</minor>
+    </specVersion>
+    <device>
+        <deviceType>urn:schemas-upnp-org:device:InternetGatewayDevice:1</deviceType>
+        <friendlyName>MikroTik Router</friendlyName>
+        <manufacturer>MikroTik</manufacturer>
+        <manufacturerURL>http://www.mikrotik.com/</manufacturerURL>
+        <modelName>Router OS</modelName>
+        <UDN>uuid:UUID-MIKROTIK-INTERNET-GATEWAY-DEVICE-DXZR-V5M2</UDN>
+        <iconList>
+            <icon>
+                <mimetype>image/gif</mimetype>
+                <width>16</width>
+                <height>16</height>
+                <depth>8</depth>
+                <url>/logo16.gif</url>
+            </icon>
+            <icon>
+                <mimetype>image/gif</mimetype>
+                <width>32</width>
+                <height>32</height>
+                <depth>8</depth>
+                <url>/logo32.gif</url>
+            </icon>
+            <icon>
+                <mimetype>image/gif</mimetype>
+                <width>48</width>
+                <height>48</height>
+                <depth>8</depth>
+                <url>/logo48.gif</url>
+            </icon>
+        </iconList>
+        <serviceList>
+            <service>
+                <serviceType>urn:schemas-microsoft-com:service:OSInfo:1</serviceType>
+                <serviceId>urn:microsoft-com:serviceId:OSInfo1</serviceId>
+                <SCPDURL>/osinfo.xml</SCPDURL>
+                <controlURL>/upnp/control/vyyraqzkin/osinfo</controlURL>
+                <eventSubURL>/upnp/event/kuxugirlyu/osinfo</eventSubURL>
+            </service>
+        </serviceList>
+        <deviceList>
+            <device>
+                <deviceType>urn:schemas-upnp-org:device:WANDevice:1</deviceType>
+                <friendlyName>WAN Device</friendlyName>
+                <manufacturer>MikroTik</manufacturer>
+                <manufacturerURL>http://www.mikrotik.com/</manufacturerURL>
+                <modelName>Router OS</modelName>
+                <UDN>uuid:UUID-MIKROTIK-WAN-DEVICE-DXZR-V5M2-11</UDN>
+                <serviceList>
+                    <service>
+                        <serviceType>urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1</serviceType>
+                        <serviceId>urn:upnp-org:serviceId:WANCommonIFC1</serviceId>
+                        <SCPDURL>/wancommonifc-11.xml</SCPDURL>
+                        <controlURL>/upnp/control/wnddggytgr/wancommonifc-11</controlURL>
+                        <eventSubURL>/upnp/event/sdpswpiwcs/wancommonifc-11</eventSubURL>
+                    </service>
+                </serviceList>
+                <deviceList>
+                    <device>
+                        <deviceType>urn:schemas-upnp-org:device:WANConnectionDevice:1</deviceType>
+                        <friendlyName>WAN Connection Device</friendlyName>
+                        <manufacturer>MikroTik</manufacturer>
+                        <manufacturerURL>http://www.mikrotik.com/</manufacturerURL>
+                        <modelName>Router OS</modelName>
+                        <UDN>uuid:UUID-MIKROTIK-WAN-CONNECTION-DEVICE-DXZR-V5M2-11</UDN>
+                        <serviceList>
+                            <service>
+                                <serviceType>urn:schemas-upnp-org:service:WANIPConnection:1</serviceType>
+                                <serviceId>urn:upnp-org:serviceId:WANIPConn1</serviceId>
+                                <SCPDURL>/wanipconn-11.xml</SCPDURL>
+                                <controlURL>/upnp/control/lomiivrzgp/wanipconn-11</controlURL>
+                                <eventSubURL>/upnp/event/weebjmhjfp/wanipconn-11</eventSubURL>
+                            </service>
+                        </serviceList>
+                    </device>
+                </deviceList>
+            </device>
+        </deviceList>
+        <presentationURL>http://192.168.88.1/</presentationURL>
+    </device>
+    <URLBase>http://192.168.88.1:2828</URLBase>
+</root>

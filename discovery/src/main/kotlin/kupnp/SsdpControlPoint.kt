@@ -125,11 +125,12 @@ class SsdpControlPoint(private val ssdpMessage: SsdpMessage) {
                             it.send(multicastPacket)
                             log("Sent multicast packet from ${it.localAddress}")
                         } catch (ex: SocketException) {
-                            log("Socket closed, aborting datagram send to: ${multicastPacket.address}")
+                            warn("Socket closed, aborting datagram send to: ${multicastPacket.address}")
                         } catch (ex: RuntimeException) {
+                            warn("Runtime Exception sending datagram: ${ex.message}")
                             throw ex
                         } catch (ex: Exception) {
-                            log("Exception sending datagram to: ${multicastPacket.address}: ${ex.message}")
+                            warn("Exception sending datagram to: ${multicastPacket.address}: ${ex.message}")
                         }
                     }
                     return@fromCallable null

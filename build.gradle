@@ -18,6 +18,8 @@ allprojects {
 
     ext.okioVersion = '1.9.0'
     ext.rxjavaVersion = '1.2.0'
+    ext.okhttpVersion = "3.4.1"
+    ext.retrofitVersion = "2.1.0"
     ext.truthVersion = '0.28'
     ext.junitVersion = '4.12'
 }

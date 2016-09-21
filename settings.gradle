@@ -1,3 +1,4 @@
 rootProject.name = 'kupnp'
 include ':discovery', ':kitchen-sink'
+include 'control'
 

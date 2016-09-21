@@ -1,0 +1,23 @@
+apply plugin: "kotlin"
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+    test.java.srcDirs += 'src/test/kotlin'
+}
+
+sourceCompatibility = 1.7
+
+dependencies {
+    compile project(':kitchen-sink')
+
+    compile "com.squareup.okhttp3:okhttp:$okhttpVersion"
+    compile "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    compile "com.squareup.retrofit2:adapter-rxjava:$retrofitVersion"
+    compile "com.squareup.retrofit2:converter-simplexml:$retrofitVersion"
+
+    testCompile group: 'junit', name: 'junit', version: junitVersion
+    testCompile "com.google.truth:truth:$truthVersion"
+    testCompile "com.squareup.okhttp3:mockwebserver:$okhttpVersion"
+    testCompile "com.squareup.retrofit2:retrofit-mock:$retrofitVersion"
+
+}
