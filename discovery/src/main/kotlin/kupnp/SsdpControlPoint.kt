@@ -3,8 +3,7 @@ package kupnp
 import okio.ByteString
 import rx.AsyncEmitter
 import rx.Observable
-import rx.Observable.concat
-import rx.Observable.fromEmitter
+import rx.Observable.*
 import rx.exceptions.Exceptions
 import rx.observables.ConnectableObservable
 import rx.schedulers.Schedulers
@@ -28,6 +27,10 @@ class SsdpControlPoint(private val ssdpMessage: SsdpMessage) {
         get() = InetSocketAddress(InetAddress.getByName(SSDP_IP), SSDP_PORT)
     val multicastPacket: DatagramPacket by lazy { buildMulticastPacket() }
 
+    /**
+     * This will start broadcasting out and listening for `ssdpMessage.mx` seconds past the last broadcast.
+     * (The broadcast sends three 0.2 - mx random interval broadcasts to make sure we alleviate for any weird packet loss.
+     */
     fun start(): Observable<ByteString> {
         return Observable
                 .using({
@@ -35,7 +38,9 @@ class SsdpControlPoint(private val ssdpMessage: SsdpMessage) {
                 }, { sockets ->
                     val sender = createSender(sockets.map { it.socket })
                     val receivers = sockets.map { createReceiver(it.socket) }
-                    bind(sockets).flatMap { Observable.merge(receivers).mergeWith(sender.doOnSubscribe { sender.connect() }) }
+                    bind(sockets)
+                            .flatMap { merge(receivers).mergeWith(sender.doOnSubscribe { sender.connect() }) }
+                            .takeUntil(sender.defaultIfEmpty(null).delay(ssdpMessage.mx.toLong(), TimeUnit.SECONDS))
                 }, {
                     it.forEach { it.socket.closeQuietly() }
                 })
@@ -72,6 +77,7 @@ class SsdpControlPoint(private val ssdpMessage: SsdpMessage) {
                 log("Creating bound socket (for datagram input/output) on: ${it.address}")
                 it.socket.bind(InetSocketAddress(it.address, 0))
             }
+            return@fromCallable null
         }
     }
 
@@ -108,6 +114,8 @@ class SsdpControlPoint(private val ssdpMessage: SsdpMessage) {
     /**
      * Create a Observable that will send the SSDP Message over the sockets we have bound. This will fire the broadcast
      * 3 times at random intervals no more than 1/2 the timeout value of the SSDP message.
+     *
+     * This doesn't emmit anything it ignores the outputs then just completes
      */
     internal fun createSender(sockets: List<DatagramSocket>): ConnectableObservable<ByteString> {
         val sendMessage = Observable
