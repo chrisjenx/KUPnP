@@ -27,12 +27,11 @@ data class ActionBody(val actionName: ActionName)
 data class ActionName(
         val actionName: String,
         val serviceType: String,
-        val serviceVersion: String = "1"
+        val serviceVersion: String = "1",
+        val arguments: Map<String, String>? = null
 ) {
-
     val namespaceReference: String = "urn:schemas-upnp-org:service:$serviceType:$serviceVersion"
     val namespacePrefix = "u"
-
 }
 
 object ActionConverter : Converter<ActionName> {
@@ -43,6 +42,10 @@ object ActionConverter : Converter<ActionName> {
     override fun write(node: OutputNode, value: ActionName) {
         node.namespaces.setReference(value.namespaceReference, value.namespacePrefix)
         node.name = "${value.namespacePrefix}:${value.actionName}"
+        // Print out the arguments nodes
+        value.arguments?.forEach {
+            node.getChild(it.key).value = it.value
+        }
     }
 
 }

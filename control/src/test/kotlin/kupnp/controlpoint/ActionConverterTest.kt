@@ -48,4 +48,20 @@ class ActionConverterTest {
         assertThat(serverRequest.getHeader("SOAPACTION")).isEqualTo(expectedHelper)
     }
 
+    @Test
+    fun testSoapAction_arguments_noResponse() {
+        server.enqueue(MockResponse().setBody("""<?xml version="1.0"?><Nothing/>"""))
+        val actionName = ActionName("MyActionName", "MyServiceType", "1",
+                arguments = mapOf("NewConnectionType" to "SomethingElse", "NewRemoteHost" to "192.168.1.1")
+        )
+
+        val response = service.postActionCommand("/", "${actionName.namespaceReference}#${actionName.actionName}", ActionRequest(ActionBody(actionName))).toBlocking().single()
+        val serverRequest = server.takeRequest()
+
+        val expected = """<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope"><s:Body><u:MyActionName xmlns:u="urn:schemas-upnp-org:service:MyServiceType:1"><NewConnectionType>SomethingElse</NewConnectionType><NewRemoteHost>192.168.1.1</NewRemoteHost></u:MyActionName></s:Body></s:Envelope>"""
+        val expectedHelper = "urn:schemas-upnp-org:service:MyServiceType:1#MyActionName"
+        assertThat(serverRequest.body.readUtf8()).isEqualTo(expected)
+        assertThat(serverRequest.getHeader("SOAPACTION")).isEqualTo(expectedHelper)
+    }
+
 }
