@@ -1,4 +1,4 @@
-package kupnp.device
+package kupnp.controlpoint
 
 import org.simpleframework.xml.core.Persister
 import org.simpleframework.xml.stream.Format

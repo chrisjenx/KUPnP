@@ -85,8 +85,8 @@ class SsdpMessage {
         private const val SSDP_DISCOVER = "\"ssdp:discover\""
         private const val NL = "\r\n"
         /**
-         *  Field value contains Search Target. Single URI. The response sent by the device depends on the field value of the
-         *  ST header field that was sent in the request. In some cases, the device MUST send multiple response messages as follows. If
+         *  Field value contains Search Target. Single URI. The response sent by the controlpoint depends on the field value of the
+         *  ST header field that was sent in the request. In some cases, the controlpoint MUST send multiple response messages as follows. If
          *  the received ST field value was:
          */
         const val HEADER_SEARCH_TEXT = "ST"
@@ -106,8 +106,8 @@ class SsdpMessage {
         const val HEADER_MAN = "MAN"
         /**
          *  Field value MUST have the max-age directive (“max-age=”) followed by an integer that specifies the number of
-         *  seconds the advertisement is valid. After this duration, control points SHOULD assume the device (or service) is no longer
-         *  available; as long as a control point has received at least one advertisement that is still valid from a root device, any of its
+         *  seconds the advertisement is valid. After this duration, control points SHOULD assume the controlpoint (or service) is no longer
+         *  available; as long as a control point has received at least one advertisement that is still valid from a root controlpoint, any of its
          *  embedded devices or any of its services, then the control point can assume that all are available. The number of seconds
          *  SHOULD be greater than or equal to 1800 seconds (30 minutes), although exceptions are defined in the text above. Specified
          *  by UPnP vendor. Other directives MUST NOT be sent and MUST be ignored when received.
@@ -118,7 +118,7 @@ class SsdpMessage {
          */
         const val HEADER_EXT = "EXT"
         /**
-         *  Field value contains a URL to the UPnP description of the root device. Normally the host portion contains a
+         *  Field value contains a URL to the UPnP description of the root controlpoint. Normally the host portion contains a
          *  literal IP address rather than a domain name in unmanaged networks. Specified by UPnP vendor.
          *  Single absolute URL (see RFC 3986).
          */
@@ -143,7 +143,7 @@ class SsdpMessage {
          * Create M-SEARCH multicast packet with the applied search string.
          *
          * @param searchString This is the ST header, Default search string is "upnp:rootdevice"
-         * @param mx this is the maximum wait time a UPnP device will wait before sending a respond 1..5 seconds.
+         * @param mx this is the maximum wait time a UPnP controlpoint will wait before sending a respond 1..5 seconds.
          */
         fun search(searchString: String = "upnp:rootdevice", mx: Int = DEFAULT_MX) = SsdpMessage(TYPE.M_SEARCH).apply {
             headers.put(HEADER_HOST, SSDP_HOST)

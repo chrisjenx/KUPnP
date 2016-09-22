@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<scpd xmlns="urn:schemas-upnp-org:service-1-0">
+    <specVersion>
+        <major>1</major>
+        <minor>0</minor>
+    </specVersion>
+    <actionList>
+        <action>
+            <name>GetExternalIPAddress</name>
+            <argumentList>
+                <argument>
+                    <name>NewExternalIPAddress</name>
+                    <direction>out</direction>
+                    <relatedStateVariable>ExternalIPAddress</relatedStateVariable>
+                </argument>
+            </argumentList>
+        </action>
+    </actionList>
+    <serviceStateTable>
+        <stateVariable sendEvents="no">
+            <name>NATEnabled</name>
+            <dataType>boolean</dataType>
+            <defaultValue>1</defaultValue>
+        </stateVariable>
+        <stateVariable sendEvents="yes">
+            <name>ExternalIPAddress</name>
+            <dataType>string</dataType>
+        </stateVariable>
+    </serviceStateTable>
+</scpd>

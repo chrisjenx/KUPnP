@@ -1,4 +1,4 @@
-package kupnp.device
+package kupnp.controlpoint
 
 import org.simpleframework.xml.Element
 import org.simpleframework.xml.ElementList
@@ -9,7 +9,7 @@ import org.simpleframework.xml.Root
  */
 
 @Root(name = "root")
-data class DeviceRoot(
+data class DeviceDescription(
         @field:Element(name = "specVersion") var specVersion: SpecVersion? = null,
         @field:Element(name = "device") var device: Device? = null
 )

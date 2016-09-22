@@ -1,4 +1,4 @@
-package kupnp.device
+package kupnp.controlpoint
 
 import okhttp3.HttpUrl
 import retrofit2.Retrofit
@@ -14,13 +14,16 @@ import rx.Observable
 interface DeviceService {
 
     @GET
-    fun getRootDeviceDescription(@Url path: String): Observable<DeviceRoot>
+    fun getDeviceDescription(@Url path: String): Observable<DeviceDescription>
+
+    @GET
+    fun getServiceDescription(@Url path: String): Observable<ServiceDescription>
 
 }
 
 
 /**
- * Create a device service for the specified device endpoint
+ * Create a controlpoint service for the specified controlpoint endpoint
  */
 fun getDeviceService(baseUrl: HttpUrl): DeviceService {
     return Retrofit.Builder()
