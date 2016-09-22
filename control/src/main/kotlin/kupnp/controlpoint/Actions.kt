@@ -5,6 +5,7 @@ import org.simpleframework.xml.Element
 import org.simpleframework.xml.Namespace
 import org.simpleframework.xml.Root
 import org.simpleframework.xml.convert.Convert
+import org.simpleframework.xml.convert.ConvertException
 import org.simpleframework.xml.convert.Converter
 import org.simpleframework.xml.stream.InputNode
 import org.simpleframework.xml.stream.OutputNode
@@ -24,11 +25,12 @@ data class ActionRequest(@field:Element(name = "Body") var body: ActionBody? = n
 }
 
 @Root
+@Convert(ActionBodyConverter::class)
 @Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope")
-data class ActionBody(@field:Element val actionName: ActionName)
+data class ActionBody(var actionName: ActionName)
 
 @Root
-@Convert(ActionConverter::class)
+@Convert(ActionNameConverter::class)
 data class ActionName(
         val actionName: String,
         val serviceType: String,
@@ -39,10 +41,42 @@ data class ActionName(
     val namespacePrefix = "u"
 }
 
+@Root(name = "Envelope")
+@Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope", prefix = "s")
+data class ActionResponse(@field:Element(name = "Body") var body: ActionBody? = null)
 
-object ActionConverter : Converter<ActionName> {
-    override fun read(node: InputNode?): ActionName {
-        throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
+
+object ActionBodyConverter : Converter<ActionBody> {
+
+    override fun read(node: InputNode): ActionBody {
+        val actionName = node.next
+        actionName ?: throw ConvertException("Missing required ActionName Node")
+        return ActionBody(ActionNameConverter.read(actionName))
+    }
+
+    override fun write(node: OutputNode, value: ActionBody) {
+        ActionNameConverter.write(node.getChild("actionName"), value.actionName)
+    }
+
+}
+
+object ActionNameConverter : Converter<ActionName> {
+    override fun read(node: InputNode): ActionName {
+        val actionName = node.name.substringBeforeLast("Response")
+        val refMatches = "urn:schemas-upnp-org:service:(.+):(\\d)".toRegex().find(node.reference)
+        val serviceType = refMatches?.groupValues?.get(1)
+        val serviceVersion = refMatches?.groupValues?.get(2)
+
+        serviceType ?: throw ConvertException("Couldn't get serviceType out of the namespace reference", node.reference)
+        serviceVersion ?: throw ConvertException("Couldn't get serviceVersion out of the namespace reference", node.reference)
+
+        val arguments = mutableMapOf<String, String>()
+        do {
+            val arg = node.next?.apply {
+                arguments.put(this.name, this.value)
+            }
+        } while (arg != null)
+        return ActionName(actionName, serviceType, serviceVersion, if (arguments.isNotEmpty()) arguments else null)
     }
 
     override fun write(node: OutputNode, value: ActionName) {

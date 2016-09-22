@@ -27,7 +27,7 @@ interface DeviceService {
      *  - actionName = `Action.name`
      */
     @POST
-    fun postActionCommand(@Url controlURL: String, @Header("SOAPACTION") soapHeader: String, @Body actionRequest: ActionRequest): Observable<Unit>
+    fun postActionCommand(@Url controlURL: String, @Header("SOAPACTION") soapHeader: String, @Body actionRequest: ActionRequest): Observable<ActionResponse>
 
 }
 
