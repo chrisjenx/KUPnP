@@ -42,7 +42,7 @@ class ActionConverterTest {
         val response = service.postActionCommand("/", "${actionName.namespaceReference}#${actionName.actionName}", request).toBlocking().single()
         val serverRequest = server.takeRequest()
 
-        val expected = """<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope"><s:Body><u:MyActionName xmlns:u="urn:schemas-upnp-org:service:MyServiceType:1"/></s:Body></s:Envelope>"""
+        val expected = """<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope"><s:Body><u:MyActionName xmlns:u="urn:schemas-upnp-org:service:MyServiceType:1"/></s:Body></s:Envelope>"""
         val expectedHelper = "urn:schemas-upnp-org:service:MyServiceType:1#MyActionName"
         assertThat(serverRequest.body.readUtf8()).isEqualTo(expected)
         assertThat(serverRequest.getHeader("SOAPACTION")).isEqualTo(expectedHelper)
@@ -58,7 +58,7 @@ class ActionConverterTest {
         val response = service.postActionCommand("/", "${actionName.namespaceReference}#${actionName.actionName}", ActionRequest(ActionBody(actionName))).toBlocking().single()
         val serverRequest = server.takeRequest()
 
-        val expected = """<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope"><s:Body><u:MyActionName xmlns:u="urn:schemas-upnp-org:service:MyServiceType:1"><NewConnectionType>SomethingElse</NewConnectionType><NewRemoteHost>192.168.1.1</NewRemoteHost></u:MyActionName></s:Body></s:Envelope>"""
+        val expected = """<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope"><s:Body><u:MyActionName xmlns:u="urn:schemas-upnp-org:service:MyServiceType:1"><NewConnectionType>SomethingElse</NewConnectionType><NewRemoteHost>192.168.1.1</NewRemoteHost></u:MyActionName></s:Body></s:Envelope>"""
         val expectedHelper = "urn:schemas-upnp-org:service:MyServiceType:1#MyActionName"
         assertThat(serverRequest.body.readUtf8()).isEqualTo(expected)
         assertThat(serverRequest.getHeader("SOAPACTION")).isEqualTo(expectedHelper)

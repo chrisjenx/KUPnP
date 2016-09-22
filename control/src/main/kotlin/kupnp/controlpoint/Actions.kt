@@ -1,5 +1,6 @@
 package kupnp.controlpoint
 
+import org.simpleframework.xml.Attribute
 import org.simpleframework.xml.Element
 import org.simpleframework.xml.Namespace
 import org.simpleframework.xml.Root
@@ -15,12 +16,16 @@ import org.simpleframework.xml.stream.OutputNode
 
 @Root(name = "Envelope")
 @Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope", prefix = "s")
-data class ActionRequest(
-        @field:Element(name = "Body") var body: ActionBody? = null
-)
+data class ActionRequest(@field:Element(name = "Body") var body: ActionBody? = null) {
+    @field:Attribute(name = "encodingStyle")
+    @field:Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope", prefix = "s")
+    var encodingStyle: String = "http://schemas.xmlsoap.org/soap/encoding/"
+        private set
+}
 
+@Root
 @Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope")
-data class ActionBody(val actionName: ActionName)
+data class ActionBody(@field:Element val actionName: ActionName)
 
 @Root
 @Convert(ActionConverter::class)
@@ -33,6 +38,7 @@ data class ActionName(
     val namespaceReference: String = "urn:schemas-upnp-org:service:$serviceType:$serviceVersion"
     val namespacePrefix = "u"
 }
+
 
 object ActionConverter : Converter<ActionName> {
     override fun read(node: InputNode?): ActionName {
