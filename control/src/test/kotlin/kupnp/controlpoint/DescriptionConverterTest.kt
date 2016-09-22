@@ -10,7 +10,7 @@ import java.io.File
 /**
  * Created by chris on 21/09/2016.
  */
-class ControlPointConverterTest {
+class DescriptionConverterTest {
 
     val server = MockWebServer()
     val resourceDir = File("src/test/resources")
