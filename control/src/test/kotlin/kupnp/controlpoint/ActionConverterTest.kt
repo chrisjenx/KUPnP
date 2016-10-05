@@ -4,11 +4,13 @@ import com.google.common.truth.Truth.assertThat
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okio.Buffer
+import org.junit.Assert.fail
 import org.junit.Test
 import org.simpleframework.xml.convert.AnnotationStrategy
 import org.simpleframework.xml.core.Persister
 import org.simpleframework.xml.stream.Format
 import org.simpleframework.xml.stream.Verbosity
+import retrofit2.adapter.rxjava.HttpException
 
 /**
  * Created by chris on 22/09/2016.
@@ -22,6 +24,23 @@ class ActionConverterTest {
                     <NewConnectionType>IP_Routed</NewConnectionType>
                     <NewPossibleConnectionTypes>IP_Routed</NewPossibleConnectionTypes>
                 </u:GetConnectionTypeInfoResponse>
+            </s:Body>
+        </s:Envelope>""".trimIndent()
+
+    val bodyError = """
+        <?xml version="1.0"?>
+        <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+            <s:Body>
+                <s:Fault>
+                    <faultcode>s:Client</faultcode>
+                    <faultstring>UPnPError</faultstring>
+                    <detail>
+                        <UPnPError xmlns="urn:schemas-upnp-org:control-1-0">
+                            <errorCode>error code</errorCode>
+                            <errorDescription>error string</errorDescription>
+                        </UPnPError>
+                    </detail>
+                </s:Fault>
             </s:Body>
         </s:Envelope>""".trimIndent()
 
@@ -86,6 +105,27 @@ class ActionConverterTest {
                 "NewConnectionType" to "IP_Routed",
                 "NewPossibleConnectionTypes" to "IP_Routed"
         ))))
+    }
+
+
+    @Test
+    fun testSoapAction_responseError() {
+        server.enqueue(MockResponse().setBody(bodyError).setResponseCode(500))
+
+        val actionName = ActionName("GetConnectionTypeInfoResponse", "WANIPConnection", "1")
+
+        try {
+            val response = service.postActionCommand("/", "${actionName.namespaceReference}#${actionName.actionName}", ActionRequest(ActionBody(actionName))).toBlocking().single()
+            fail("Should of thrown HttpException")
+        } catch (e: Exception) {
+            assertThat(e.cause).isInstanceOf(HttpException::class.java)
+            val httpEx = e.cause as HttpException
+
+            val errorBody = getRetrofit(server.url("/"))
+                    .responseBodyConverter<ActionFault>(ActionFault::class.java, arrayOf<Annotation>())
+                    .convert(httpEx.response().errorBody())
+            assertThat(errorBody).isNotNull()
+        }
     }
 
 }

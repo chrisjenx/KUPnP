@@ -31,15 +31,20 @@ interface DeviceService {
 
 }
 
-
 /**
  * Create a controlpoint service for the specified controlpoint endpoint
  */
-fun getDeviceService(baseUrl: HttpUrl): DeviceService {
+fun getRetrofit(baseUrl: HttpUrl): Retrofit {
     return Retrofit.Builder()
             .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
             .addConverterFactory(xmlConverter)
             .baseUrl(baseUrl)
             .build()
-            .create(DeviceService::class.java)
+}
+
+/**
+ * Create a controlpoint service for the specified controlpoint endpoint
+ */
+fun getDeviceService(baseUrl: HttpUrl): DeviceService {
+    return getRetrofit(baseUrl).create(DeviceService::class.java)
 }

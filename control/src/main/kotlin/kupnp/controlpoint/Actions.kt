@@ -45,6 +45,32 @@ data class ActionName(
 @Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope", prefix = "s")
 data class ActionResponse(@field:Element(name = "Body") var body: ActionBody? = null)
 
+@Root(name = "Envelope")
+@Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope", prefix = "s")
+data class ActionFault(@field:Element(name = "Body") var body: BodyFault? = null)
+
+@Root(name = "Body")
+@Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope")
+data class BodyFault(
+        @field:Element(name = "Fault", required = false) var fault: Fault? = null
+)
+
+@Root
+@Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope")
+data class Fault(
+        @field:Element(name = "faultCode", required = false) var faultCode: String? = null,
+        @field:Element(name = "faultString", required = false) var faultString: String? = null,
+        @field:Element(name = "detail", required = false) var detail: FaultDetail? = null
+)
+
+
+data class FaultDetail(@field:Element(name = "UPnPError") var upnpError: UPnPError? = null)
+
+@Namespace(reference = "urn:schemas-upnp-org:control-1-0")
+data class UPnPError(
+        @field:Element(name = "errorCode") var errorCode: String? = null,
+        @field:Element(name = "errorDescription") var errorDescription: String? = null
+)
 
 object ActionBodyConverter : Converter<ActionBody> {
 
