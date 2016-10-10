@@ -5,6 +5,8 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
 import retrofit2.http.*
 import rx.Observable
+import rx.Scheduler
+import rx.schedulers.Schedulers
 
 /**
  * Created by chris on 21/09/2016.
@@ -12,6 +14,9 @@ import rx.Observable
 
 interface DeviceService {
 
+    /**
+     * Gets the description of the passed in DeviceDescription url
+     */
     @GET
     fun getDeviceDescription(@Url path: String): Observable<DeviceDescription>
 
@@ -34,17 +39,10 @@ interface DeviceService {
 /**
  * Create a controlpoint service for the specified controlpoint endpoint
  */
-fun getRetrofit(baseUrl: HttpUrl): Retrofit {
+fun getRetrofit(baseUrl: HttpUrl, scheduler: Scheduler = Schedulers.io()): Retrofit {
     return Retrofit.Builder()
-            .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+            .addCallAdapterFactory(RxJavaCallAdapterFactory.createWithScheduler(scheduler))
             .addConverterFactory(xmlConverter)
             .baseUrl(baseUrl)
             .build()
-}
-
-/**
- * Create a controlpoint service for the specified controlpoint endpoint
- */
-fun getDeviceService(baseUrl: HttpUrl): DeviceService {
-    return getRetrofit(baseUrl).create(DeviceService::class.java)
 }
