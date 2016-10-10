@@ -125,6 +125,12 @@ class ActionConverterTest {
                     .responseBodyConverter<ActionFault>(ActionFault::class.java, arrayOf<Annotation>())
                     .convert(httpEx.response().errorBody())
             assertThat(errorBody).isNotNull()
+            assertThat(errorBody?.body).isNotNull()
+            assertThat(errorBody?.body?.fault).isNotNull()
+            assertThat(errorBody?.body?.fault?.faultCode).isEqualTo("s:Client")
+            assertThat(errorBody?.body?.fault?.faultString).isEqualTo("UPnPError")
+            assertThat(errorBody?.body?.fault?.detail?.upnpError?.errorCode).isEqualTo("error code")
+            assertThat(errorBody?.body?.fault?.detail?.upnpError?.errorDescription).isEqualTo("error string")
         }
     }
 

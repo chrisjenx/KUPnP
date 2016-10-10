@@ -45,9 +45,16 @@ data class ActionName(
 @Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope", prefix = "s")
 data class ActionResponse(@field:Element(name = "Body") var body: ActionBody? = null)
 
+//<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
 @Root(name = "Envelope")
 @Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope", prefix = "s")
-data class ActionFault(@field:Element(name = "Body") var body: BodyFault? = null)
+data class ActionFault(
+        @field:Attribute(name = "encodingStyle")
+        @field:Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope", prefix = "s")
+        var encodingStyle: String? = null,
+        @field:Element(name = "Body") var body: BodyFault? = null
+)
+
 
 @Root(name = "Body")
 @Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope")
@@ -58,8 +65,8 @@ data class BodyFault(
 @Root
 @Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope")
 data class Fault(
-        @field:Element(name = "faultCode", required = false) var faultCode: String? = null,
-        @field:Element(name = "faultString", required = false) var faultString: String? = null,
+        @field:Element(name = "faultcode", required = false) var faultCode: String? = null,
+        @field:Element(name = "faultstring", required = false) var faultString: String? = null,
         @field:Element(name = "detail", required = false) var detail: FaultDetail? = null
 )
 
