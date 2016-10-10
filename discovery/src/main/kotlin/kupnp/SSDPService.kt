@@ -1,7 +1,6 @@
 package kupnp
 
 import rx.Observable
-import rx.schedulers.Schedulers
 
 /**
  * Created by chris on 16/04/2016.
@@ -10,15 +9,17 @@ import rx.schedulers.Schedulers
 class SSDPService {
 
     companion object {
-        fun msearch(): Observable<String> {
-            return SsdpControlPoint(SsdpMessage.search())
-                    .start()
-                    .subscribeOn(Schedulers.io())
-                    .map {
-                        val string = it.utf8()
-                        log("Result: $string")
-                        return@map string
-                    }
+        /**
+         * Create an msearch control point. Will return uniquely found devices on the network then finish after the
+         * timeout value.
+         *
+         * @param message defaults to search for everything, can pass in you're own search message. Not-Null.
+         */
+        fun msearch(message: SsdpMessage = SsdpMessage.search()): Observable<SsdpMessage> {
+            return SsdpControlPoint(message)
+                    .create()
+                    .map { SsdpMessage.fromPacket(it) }
+                    .distinct()
         }
     }
 

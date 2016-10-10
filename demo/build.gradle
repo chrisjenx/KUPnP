@@ -1,0 +1,15 @@
+apply plugin: "kotlin"
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+    test.java.srcDirs += 'src/test/kotlin'
+}
+
+sourceCompatibility = 1.7
+
+dependencies {
+
+    compile project(':discovery')
+    compile project(':control')
+
+}

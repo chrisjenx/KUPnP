@@ -1,5 +1,6 @@
 package kupnp
 
+import rx.schedulers.Schedulers
 import rx.subscriptions.CompositeSubscription
 
 var subs = CompositeSubscription()
@@ -7,9 +8,10 @@ var subs = CompositeSubscription()
 fun main(args: Array<String>) {
 
     log("Starting search")
-    val sub = SSDPService.msearch()
+    val sub = SSDPService.Companion.msearch()
+            .subscribeOn(Schedulers.io())
             .subscribe({
-                log("Search result")
+                log("Search result:\n\r\t$it\n\r")
             }, {
                 it.printStackTrace()
             }, {

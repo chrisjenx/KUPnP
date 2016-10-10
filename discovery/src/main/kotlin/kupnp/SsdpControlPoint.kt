@@ -28,10 +28,12 @@ class SsdpControlPoint(private val ssdpMessage: SsdpMessage) {
     val multicastPacket: DatagramPacket by lazy { buildMulticastPacket() }
 
     /**
-     * This will start broadcasting out and listening for `ssdpMessage.mx` seconds past the last broadcast.
+     * This will create broadcasting out and listening for `ssdpMessage.mx` seconds past the last broadcast.
      * (The broadcast sends three 0.2 - mx random interval broadcasts to make sure we alleviate for any weird packet loss.
+     *
+     * Make sure to subscribe to this off the UI thread as this will create sockets and do network calls.
      */
-    fun start(): Observable<ByteString> {
+    fun create(): Observable<ByteString> {
         return Observable
                 .using({
                     createSockets()

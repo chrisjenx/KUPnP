@@ -79,6 +79,11 @@ class SsdpMessage {
         return code
     }
 
+    override fun toString(): String {
+        return "SsdpMessage(headers=$headers)"
+    }
+
+
     companion object {
         private const val DEFAULT_MX = 3
         private const val SSDP_HOST = "${SsdpControlPoint.SSDP_IP}:${SsdpControlPoint.SSDP_PORT}"
