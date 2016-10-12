@@ -23,6 +23,6 @@ class WsDiscoveryMessage(private val uuid: UUID = UUID.randomUUID()) {
         const val DEFAULT_TIMEOUT = 4
         const val DEFAULT_IP_ADDRESS = MulticastDiscovery.DEFAULT_WS_DISCOVERY_MULTICAST_IP
         const val DEFAULT_PORT = MulticastDiscovery.DEFAULT_WS_DISCOVERY_PORT
-        const val PROBE_MESSAGE = "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:wsa=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\" xmlns:tns=\"http://schemas.xmlsoap.org/ws/2005/04/discovery\"><soap:Header><wsa:Action>http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</wsa:Action><wsa:MessageID>urn:uuid:{UUID}</wsa:MessageID><wsa:To>urn:schemas-xmlsoap-org:ws:2005:04:discovery</wsa:To></soap:Header><soap:Body><tns:Probe/></soap:Body></soap:Envelope>"
+        const val PROBE_MESSAGE = "<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/s-envelope\" xmlns:a=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\" xmlns:d=\"http://schemas.xmlsoap.org/ws/2005/04/discovery\"><s:Header><a:Action>http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</a:Action><a:MessageID>urn:uuid:{UUID}</a:MessageID><a:To>urn:schemas-xmlsoap-org:ws:2005:04:discovery</a:To></s:Header><s:Body><d:Probe/></s:Body></s:Envelope>"
     }
 }
