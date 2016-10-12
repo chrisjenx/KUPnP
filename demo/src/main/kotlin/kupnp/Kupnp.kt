@@ -1,9 +1,11 @@
 package kupnp
 
+import kupnp.controlpoint.DeviceDescription
 import kupnp.controlpoint.ServiceDescription
 import kupnp.controlpoint.getDeviceService
 import okhttp3.HttpUrl
 import rx.Observable
+import rx.Observable.merge
 import rx.schedulers.Schedulers
 import rx.subscriptions.CompositeSubscription
 
@@ -12,25 +14,24 @@ var subs = CompositeSubscription()
 fun main(args: Array<String>) {
 
     log("Starting search")
-    val sub = SSDPService.msearch()
-            .flatMap {
-//                debug("Search result:\n\r\t$it\n\r")
-                val location = it.headers[SsdpMessage.HEADER_LOCATION] ?: ""
-                val url = HttpUrl.parse(location)?.newBuilder()?.encodedPath("/")?.build() ?: return@flatMap Observable.empty<ServiceDescription>()
 
-                debug("SearchLocation: $url")
-                getDeviceService(url).getDeviceDescription(location)
-            }
+//    val ssdp = SSDPService.msearch()
+//            .flatMap {
+//                val location = it.headers[SsdpMessage.HEADER_LOCATION] ?: ""
+//                val url = HttpUrl.parse(location)?.newBuilder()?.encodedPath("/")?.build() ?: return@flatMap Observable.empty<ServiceDescription>()
+//                //debug("SearchLocation: $location")
+//                getDeviceService(url).getDeviceDescription(location).onExceptionResumeNext(Observable.empty<DeviceDescription>())
+//            }
+//            .doOnNext { debug("DeviceDescription: $it") }
+//            .doOnCompleted { log("Completed SSDP Discovery") }
+//            .subscribeOn(Schedulers.io())
+    val ws = WsDiscoveryService.search()
+            .doOnNext { debug("WSSearch Result: ${it.data.utf8()}") }
+            .doOnCompleted { log("Completed WS-Discovery") }
             .subscribeOn(Schedulers.io())
-            .subscribe({
-                debug("DeviceDescriptio: $it")
-            }, {
-                it.printStackTrace()
-            }, {
-                log("Completed SSDP Discovery")
-            })
-            .apply { subs.add(this) }
 
+//    val sub = merge(ssdp, ws).subscribe({}, { it.printStackTrace() })
+    val sub = ws.subscribe({}, { it.printStackTrace() })
 
     while (!sub.isUnsubscribed) {
         Thread.sleep(500L)

@@ -87,7 +87,7 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
      * Subscribes on a different thread and will keep listening until you unsubscribe
      */
     internal fun createReceiver(socket: DatagramSocket): Observable<MulticastDiscoveryResponse> {
-        val receiveData = ByteArray(1024)
+        val receiveData = ByteArray(discoveryRequest.responseSize)
         return Observable
                 .create<MulticastDiscoveryResponse> {
                     val receivePacket = DatagramPacket(receiveData, receiveData.size)
@@ -128,6 +128,7 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
                     sockets.forEach {
                         try {
                             it.send(multicastPacket)
+                            log("Sent multicast packet:\n\r$request")
                             log("Sent multicast packet from ${it.localAddress}")
                         } catch (ex: SocketException) {
                             warn("Socket closed, aborting datagram send to: ${multicastPacket.address}")
@@ -177,7 +178,8 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
             val data: ByteString,
             val multicastAddress: String = DEFAULT_SSDP_MULTICAST_IP,
             val port: Int = DEFAULT_SSDP_PORT,
-            val timeout: Int = DEFAULT_TIMEOUT_SECONDS
+            val timeout: Int = DEFAULT_TIMEOUT_SECONDS,
+            val responseSize: Int = 1024
     )
 
     data class MulticastDiscoveryResponse(
@@ -191,7 +193,7 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
         internal const val DEFAULT_TIMEOUT_SECONDS = 3
         internal const val DEFAULT_SSDP_PORT = 1900
         internal const val DEFAULT_SSDP_MULTICAST_IP = "239.255.255.250"
-        internal const val DEFAULT_WS_DISCOVERY_PORT = 3701
+        internal const val DEFAULT_WS_DISCOVERY_PORT = 3702
         internal const val DEFAULT_WS_DISCOVERY_MULTICAST_IP = "239.255.255.250"
     }
 
