@@ -24,7 +24,8 @@ class SSDPService {
             )
             return MulticastDiscovery(request)
                     .create()
-                    .map { SsdpMessage.fromPacket(it) }
+                    .map { SsdpMessage.fromPacket(it.data) }
+                    .filter { it.type == SsdpMessage.TYPE.OK }
                     .distinct()
         }
     }

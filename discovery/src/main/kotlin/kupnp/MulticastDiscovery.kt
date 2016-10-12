@@ -30,7 +30,7 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
      *
      * Make sure to subscribe to this off the UI thread as this will create sockets and do network calls.
      */
-    fun create(): Observable<ByteString> {
+    fun create(): Observable<MulticastDiscoveryResponse> {
         return Observable
                 .using({
                     createSockets()
@@ -86,15 +86,18 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
     /**
      * Subscribes on a different thread and will keep listening until you unsubscribe
      */
-    internal fun createReceiver(socket: DatagramSocket): Observable<ByteString> {
+    internal fun createReceiver(socket: DatagramSocket): Observable<MulticastDiscoveryResponse> {
         val receiveData = ByteArray(1024)
         return Observable
-                .create<ByteString> {
+                .create<MulticastDiscoveryResponse> {
                     val receivePacket = DatagramPacket(receiveData, receiveData.size)
                     while (!it.isUnsubscribed) {
                         try {
                             socket.receive(receivePacket)
-                            it.onNext(ByteString.of(receivePacket.data, receivePacket.offset, receivePacket.length))
+                            it.onNext(MulticastDiscoveryResponse(
+                                    data = ByteString.of(receivePacket.data, receivePacket.offset, receivePacket.length),
+                                    address = receivePacket.address
+                            ))
                             // Reset packet size
                             receivePacket.length = receiveData.size
                         } catch (se: SocketException) {
@@ -119,7 +122,7 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
      *
      * This doesn't emmit anything it ignores the outputs then just completes
      */
-    internal fun createSender(sockets: List<DatagramSocket>): ConnectableObservable<ByteString> {
+    internal fun createSender(sockets: List<DatagramSocket>): ConnectableObservable<MulticastDiscoveryResponse> {
         val sendMessage = Observable
                 .fromCallable {
                     sockets.forEach {
@@ -152,7 +155,7 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
                 .flatMap { sendMessage }
                 .subscribeOn(Schedulers.io())
                 .ignoreElements()
-                .cast(ByteString::class.java)
+                .cast(MulticastDiscoveryResponse::class.java)
                 .publish()
     }
 
@@ -175,6 +178,11 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
             val multicastAddress: String = DEFAULT_SSDP_MULTICAST_IP,
             val port: Int = DEFAULT_SSDP_PORT,
             val timeout: Int = DEFAULT_TIMEOUT_SECONDS
+    )
+
+    data class MulticastDiscoveryResponse(
+            val data: ByteString,
+            val address: InetAddress
     )
 
     internal data class AddressAndSocket(val address: InetAddress, val socket: DatagramSocket)
