@@ -16,7 +16,13 @@ class SSDPService {
          * @param message defaults to search for everything, can pass in you're own search message. Not-Null.
          */
         fun msearch(message: SsdpMessage = SsdpMessage.search()): Observable<SsdpMessage> {
-            return SsdpControlPoint(message)
+            val request = MulticastDiscovery.MulticastDiscoveryRequest(
+                    data = message.byteString(),
+                    multicastAddress = SsdpMessage.DEFAULT_IP_ADDRESS,
+                    port = SsdpMessage.DEFAULT_PORT,
+                    timeout = SsdpMessage.DEFAULT_MX
+            )
+            return MulticastDiscovery(request)
                     .create()
                     .map { SsdpMessage.fromPacket(it) }
                     .distinct()

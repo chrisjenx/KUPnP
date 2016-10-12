@@ -85,8 +85,10 @@ class SsdpMessage {
 
 
     companion object {
-        private const val DEFAULT_MX = 3
-        private const val SSDP_HOST = "${SsdpControlPoint.SSDP_IP}:${SsdpControlPoint.SSDP_PORT}"
+        const val DEFAULT_MX = 3
+        const val DEFAULT_IP_ADDRESS = MulticastDiscovery.DEFAULT_SSDP_MULTICAST_IP
+        const val DEFAULT_PORT = MulticastDiscovery.DEFAULT_SSDP_PORT
+        private const val SSDP_HOST = "$DEFAULT_IP_ADDRESS:$DEFAULT_PORT"
         private const val SSDP_DISCOVER = "\"ssdp:discover\""
         private const val NL = "\r\n"
         /**

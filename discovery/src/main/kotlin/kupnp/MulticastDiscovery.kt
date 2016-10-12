@@ -15,17 +15,15 @@ import java.util.concurrent.TimeUnit
  * Created by chris on 16/04/2016.
  * For project kupnp
  */
-class SsdpControlPoint(private val ssdpMessage: SsdpMessage) {
+class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest) {
 
+    val multicastPacket: DatagramPacket by lazy { buildMulticastPacket(discoveryRequest) }
     private val request: ByteString
 
     init {
-        request = ssdpMessage.byteString()
+        request = discoveryRequest.data
     }
 
-    val broadcastAddress: InetSocketAddress
-        get() = InetSocketAddress(InetAddress.getByName(SSDP_IP), SSDP_PORT)
-    val multicastPacket: DatagramPacket by lazy { buildMulticastPacket() }
 
     /**
      * This will create broadcasting out and listening for `ssdpMessage.mx` seconds past the last broadcast.
@@ -42,16 +40,19 @@ class SsdpControlPoint(private val ssdpMessage: SsdpMessage) {
                     val receivers = sockets.map { createReceiver(it.socket) }
                     bind(sockets)
                             .flatMap { merge(receivers).mergeWith(sender.doOnSubscribe { sender.connect() }) }
-                            .takeUntil(sender.defaultIfEmpty(null).delay(ssdpMessage.mx.toLong(), TimeUnit.SECONDS))
+                            .takeUntil(sender.defaultIfEmpty(null).delay(discoveryRequest.timeout.toLong(), TimeUnit.SECONDS))
                 }, {
                     it.forEach { it.socket.closeQuietly() }
                 })
     }
 
-    internal fun buildMulticastPacket(): DatagramPacket {
-        val sendData = request.toByteArray()
+    internal fun buildMulticastPacket(discoveryRequest: MulticastDiscoveryRequest): DatagramPacket {
+        val sendData = discoveryRequest.data.toByteArray()
+        val address = InetAddress.getByName(discoveryRequest.multicastAddress).apply {
+            if (!isMulticastAddress) throw IllegalArgumentException("You must specify a multicast address")
+        }
         /* create a packet from our data destined for 239.255.255.250:1900 */
-        return DatagramPacket(sendData, sendData.size, broadcastAddress.address, SSDP_PORT)
+        return DatagramPacket(sendData, sendData.size, address, discoveryRequest.port)
     }
 
     /**
@@ -144,7 +145,7 @@ class SsdpControlPoint(private val ssdpMessage: SsdpMessage) {
                     // Fire first message straight away
                     e.onNext(Observable.just(0L))
                     for (i in 0..1) {
-                        val rand = 200 + r.nextInt(ssdpMessage.mx * 1000)
+                        val rand = 200 + r.nextInt(discoveryRequest.timeout * 1000)
                         e.onNext(Observable.timer(rand.toLong(), TimeUnit.MILLISECONDS))
                     }
                     e.onCompleted()
@@ -164,11 +165,27 @@ class SsdpControlPoint(private val ssdpMessage: SsdpMessage) {
         }
     }
 
+    /**
+     * Multicast search request.
+     *
+     * @param timeout this is how long we'll wait for requests to come back, most implementations
+     * will wait a random time between [0-timeout] before responding to the request.
+     */
+    data class MulticastDiscoveryRequest(
+            val data: ByteString,
+            val multicastAddress: String = DEFAULT_SSDP_MULTICAST_IP,
+            val port: Int = DEFAULT_SSDP_PORT,
+            val timeout: Int = DEFAULT_TIMEOUT_SECONDS
+    )
+
     internal data class AddressAndSocket(val address: InetAddress, val socket: DatagramSocket)
 
     companion object {
-        internal const val SSDP_PORT = 1900
-        internal const val SSDP_IP = "239.255.255.250"
+        internal const val DEFAULT_TIMEOUT_SECONDS = 3
+        internal const val DEFAULT_SSDP_PORT = 1900
+        internal const val DEFAULT_SSDP_MULTICAST_IP = "239.255.255.250"
+        internal const val DEFAULT_WS_DISCOVERY_PORT = 3701
+        internal const val DEFAULT_WS_DISCOVERY_MULTICAST_IP = "239.255.255.250"
     }
 
 }
