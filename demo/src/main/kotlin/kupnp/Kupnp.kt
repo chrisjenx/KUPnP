@@ -1,11 +1,5 @@
 package kupnp
 
-import kupnp.controlpoint.DeviceDescription
-import kupnp.controlpoint.ServiceDescription
-import kupnp.controlpoint.getDeviceService
-import okhttp3.HttpUrl
-import rx.Observable
-import rx.Observable.merge
 import rx.schedulers.Schedulers
 import rx.subscriptions.CompositeSubscription
 
@@ -26,7 +20,7 @@ fun main(args: Array<String>) {
 //            .doOnCompleted { log("Completed SSDP Discovery") }
 //            .subscribeOn(Schedulers.io())
     val ws = WsDiscoveryService.search()
-            .doOnNext { debug("WSSearch Result: ${it.data.utf8()}") }
+            .doOnNext { debug("WSSearch Result: $it") }
             .doOnCompleted { log("Completed WS-Discovery") }
             .subscribeOn(Schedulers.io())
 

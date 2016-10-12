@@ -1,7 +1,6 @@
 package kupnp
 
 import kupnp.MulticastDiscovery.MulticastDiscoveryRequest
-import kupnp.MulticastDiscovery.MulticastDiscoveryResponse
 import rx.Observable
 
 /**
@@ -9,7 +8,7 @@ import rx.Observable
  */
 object WsDiscoveryService {
 
-    fun search(wsDiscoveryMessage: WsDiscoveryMessage = WsDiscoveryMessage()): Observable<MulticastDiscoveryResponse> {
+    fun search(wsDiscoveryMessage: WsDiscoveryMessage = WsDiscoveryMessage()): Observable<WsDiscoveryResponse> {
         val request = MulticastDiscoveryRequest(
                 data = wsDiscoveryMessage.byteString(),
                 multicastAddress = WsDiscoveryMessage.DEFAULT_IP_ADDRESS,
@@ -19,6 +18,9 @@ object WsDiscoveryService {
         )
         return MulticastDiscovery(request)
                 .create()
+                .map { WsDiscoveryResponse.parseResponse(it.data, it.address) }
+                .filter { it != null }
+                .cast(WsDiscoveryResponse::class.java)
                 .distinct()
     }
 
