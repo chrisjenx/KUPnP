@@ -24,7 +24,6 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
         request = discoveryRequest.data
     }
 
-
     /**
      * This will create broadcasting out and listening for `ssdpMessage.mx` seconds past the last broadcast.
      * (The broadcast sends three 0.2 - mx random interval broadcasts to make sure we alleviate for any weird packet loss.
