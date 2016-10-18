@@ -12,7 +12,14 @@ import org.simpleframework.xml.Root
 data class DeviceDescription(
         @field:Element(name = "specVersion") var specVersion: SpecVersion? = null,
         @field:Element(name = "device") var device: Device? = null
-)
+) {
+
+    /**
+     * Find a service in the root object
+     */
+    fun findServiceOfType(serviceType: String): Service? = device?.findServiceOfType(serviceType)
+
+}
 
 data class SpecVersion(
         @field:Element(name = "major") var major: Int? = null,
@@ -32,7 +39,19 @@ data class Device(
         @field:ElementList(name = "serviceList", required = false) var serviceList: List<Service>? = null,
         @field:ElementList(name = "deviceList", required = false) var deviceList: List<Device>? = null,
         @field:Element(name = "presentationURL", required = false) var presentationURL: String? = null
-)
+) {
+
+    fun findServiceOfType(serviceType: String): Service? {
+        serviceList?.forEach { service ->
+            if (service.serviceType == serviceType) return service
+        }
+        deviceList?.forEach {
+            return it.findServiceOfType(serviceType)
+        }
+        return null
+    }
+
+}
 
 data class Service(
         @field:Element(name = "serviceType") var serviceType: String? = null,
