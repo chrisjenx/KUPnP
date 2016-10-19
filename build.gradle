@@ -2,12 +2,14 @@ allprojects {
 
     buildscript {
         ext.kotlin_version = '1.0.4'
+        ext.dokka_version = '0.9.9'
         repositories {
-            mavenCentral()
+            jcenter()
             maven { url "https://dl.bintray.com/kotlin/kotlin-eap/" }
         }
         dependencies {
             classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+            classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
         }
     }
 
@@ -22,8 +24,8 @@ allprojects {
     ext.retrofitVersion = "2.1.0"
     ext.truthVersion = '0.28'
     ext.junitVersion = '4.12'
-}
 
+}
 
 task wrapper(type: Wrapper) {
     gradleVersion = '3.1'

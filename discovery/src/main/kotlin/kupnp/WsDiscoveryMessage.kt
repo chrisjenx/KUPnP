@@ -18,7 +18,6 @@ class WsDiscoveryMessage(private val uuid: UUID = UUID.randomUUID()) {
         return "WsDiscoveryMessage(probeMessage=${buildProbeMessage()})"
     }
 
-
     companion object {
         const val DEFAULT_TIMEOUT = 4
         const val DEFAULT_IP_ADDRESS = MulticastDiscovery.DEFAULT_WS_DISCOVERY_MULTICAST_IP

@@ -1,0 +1,102 @@
+/*
+ * Copyright 2013 Chris Banes
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+apply plugin: 'maven-publish'
+apply plugin: 'org.jetbrains.dokka'
+
+def isReleaseBuild() {
+    return VERSION_NAME.contains("SNAPSHOT") == false
+}
+
+def getReleaseRepositoryUrl() {
+    return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
+            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+}
+
+def getSnapshotRepositoryUrl() {
+    return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
+            : "https://oss.sonatype.org/content/repositories/snapshots/"
+}
+
+def getRepositoryUsername() {
+    return hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : ""
+}
+
+def getRepositoryPassword() {
+    return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: 'dokka') {
+    classifier = 'javadoc'
+    from "$buildDir/docs/ktdoc"
+}
+
+dokka {
+    moduleName = POM_ARTIFACT_ID
+    outputFormat = 'javadoc'
+    outputDirectory = "$buildDir/docs/ktdoc"
+    sourceDirs = files('src/main/kotlin')
+}
+
+
+afterEvaluate {
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId GROUP
+                artifactId POM_ARTIFACT_ID
+                version VERSION_NAME
+
+                from components.java
+                artifact sourcesJar
+                artifact javadocJar
+
+                pom.withXml {
+                    asNode().appendNode('name', POM_NAME)
+                    asNode().appendNode('description', POM_DESCRIPTION)
+                    asNode().appendNode('url', POM_URL)
+                    def scm = asNode().appendNode('scm')
+                    scm.appendNode('url', POM_SCM_URL)
+                    scm.appendNode('connection', POM_SCM_CONNECTION)
+                    scm.appendNode('developerConnection', POM_SCM_DEV_CONNECTION)
+                    def lic = asNode().appendNode('licenses').appendNode('license')
+                    lic.appendNode('name', POM_LICENCE_NAME)
+                    lic.appendNode('url', POM_LICENCE_URL)
+                    lic.appendNode('distribution', POM_LICENCE_DIST)
+                    def dev = asNode().appendNode('developers').appendNode('developer')
+                    dev.appendNode('id', POM_DEVELOPER_ID)
+                    dev.appendNode('name', POM_DEVELOPER_NAME)
+                }
+            }
+        }
+        repositories {
+            maven {
+                // change to point to your repo, e.g. http://my.org/repo
+                url isReleaseBuild() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
+                credentials {
+                    username getRepositoryUsername()
+                    password getRepositoryPassword()
+                }
+            }
+        }
+    }
+}
