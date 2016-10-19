@@ -16,28 +16,30 @@
 
 
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
 apply plugin: 'org.jetbrains.dokka'
+
+
+ext.pomFile = file("${project.buildDir}/generated-pom.xml")
 
 def isReleaseBuild() {
     return VERSION_NAME.contains("SNAPSHOT") == false
 }
 
 def getReleaseRepositoryUrl() {
-    return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
-            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+    return "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 }
 
 def getSnapshotRepositoryUrl() {
-    return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
-            : "https://oss.sonatype.org/content/repositories/snapshots/"
+    return "https://oss.sonatype.org/content/repositories/snapshots/"
 }
 
 def getRepositoryUsername() {
-    return hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : ""
+    return hasProperty('sonatypeUsername') ? sonatypeUsername : ""
 }
 
 def getRepositoryPassword() {
-    return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
+    return hasProperty('sonatypePassword') ? sonatypePassword : ""
 }
 
 task sourcesJar(type: Jar) {
@@ -57,11 +59,24 @@ dokka {
     sourceDirs = files('src/main/kotlin')
 }
 
+artifacts {
+    archives jar
+    archives sourcesJar
+    archives javadocJar
+}
 
-afterEvaluate {
+signing {
+    required { isReleaseBuild() && signatory != null }
+    sign configurations.archives
+}
+
+
+afterEvaluate { project ->
+
+
     publishing {
         publications {
-            mavenJava(MavenPublication) {
+            jar(MavenPublication) {
                 groupId GROUP
                 artifactId POM_ARTIFACT_ID
                 version VERSION_NAME
@@ -86,11 +101,36 @@ afterEvaluate {
                     dev.appendNode('id', POM_DEVELOPER_ID)
                     dev.appendNode('name', POM_DEVELOPER_NAME)
                 }
+
+                if (signing.required) {
+                    // Sign the pom.xml.
+                    pom.withXml {
+                        writeTo(project.ext.pomFile)
+                        def pomAscFile = signing.sign(project.ext.pomFile).signatureFiles[0]
+                        artifact(pomAscFile) {
+                            classifier = null
+                            extension = 'pom.asc'
+                        }
+                        project.ext.pomFile.delete()
+                    }
+
+                    // Sign the artifacts.
+                    project.tasks.signArchives.signatureFiles.each {
+                        artifact(it) {
+                            def matcher = it.file =~ /-(sources|javadoc)\.jar\.asc$/
+                            if (matcher.find()) {
+                                classifier = matcher.group(1)
+                            } else {
+                                classifier = null
+                            }
+                            extension = 'jar.asc'
+                        }
+                    }
+                }
             }
         }
         repositories {
             maven {
-                // change to point to your repo, e.g. http://my.org/repo
                 url isReleaseBuild() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
                 credentials {
                     username getRepositoryUsername()
@@ -99,4 +139,14 @@ afterEvaluate {
             }
         }
     }
+
+    model {
+        tasks.publishJarPublicationToMavenLocal {
+            dependsOn(project.tasks.signArchives)
+        }
+        tasks.publishJarPublicationToMavenRepository {
+            dependsOn(project.tasks.signArchives)
+        }
+    }
+
 }
