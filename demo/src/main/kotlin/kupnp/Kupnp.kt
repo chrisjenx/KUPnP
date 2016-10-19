@@ -13,7 +13,7 @@ var subs = CompositeSubscription()
 
 fun main(args: Array<String>) {
 
-    log("Starting search")
+    info("Starting search")
 
     val ssdp = SSDPService.msearch()
             .flatMap {
@@ -23,11 +23,11 @@ fun main(args: Array<String>) {
                 getDeviceService(url).getDeviceDescription(location).onExceptionResumeNext(Observable.empty<DeviceDescription>())
             }
             .doOnNext { debug("DeviceDescription: $it") }
-            .doOnCompleted { log("Completed SSDP Discovery") }
+            .doOnCompleted { info("Completed SSDP Discovery") }
             .subscribeOn(Schedulers.io())
     val ws = WsDiscoveryService.search()
             .doOnNext { debug("WSSearch Result: ${it.packetAddress} ${it.hardware}") }
-            .doOnCompleted { log("Completed WS-Discovery") }
+            .doOnCompleted { info("Completed WS-Discovery") }
             .subscribeOn(Schedulers.io())
 
     val sub = merge(ssdp, ws).subscribe({}, { it.printStackTrace() })

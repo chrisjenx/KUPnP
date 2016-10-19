@@ -76,7 +76,7 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
     internal fun bind(sockets: List<AddressAndSocket>): Observable<Unit> {
         return Observable.fromCallable {
             sockets.forEach {
-                log("Creating bound socket (for datagram input/output) on: ${it.address}")
+                info("Creating bound socket (for datagram input/output) on: ${it.address}")
                 it.socket.bind(InetSocketAddress(it.address, 0))
             }
             return@fromCallable null
@@ -128,8 +128,8 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
                     sockets.forEach {
                         try {
                             it.send(multicastPacket)
-                            log("Sent multicast packet:\n\r$request")
-                            log("Sent multicast packet from ${it.localAddress}")
+                            info("Sent multicast packet:\n\r$request")
+                            info("Sent multicast packet from ${it.localAddress}")
                         } catch (ex: SocketException) {
                             warn("Socket closed, aborting datagram send to: ${multicastPacket.address}")
                         } catch (ex: RuntimeException) {
