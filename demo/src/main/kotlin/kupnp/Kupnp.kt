@@ -25,7 +25,8 @@ fun main(args: Array<String>) {
             .doOnNext { debug("DeviceDescription: $it") }
             .doOnCompleted { info("Completed SSDP Discovery") }
             .subscribeOn(Schedulers.io())
-    val ws = WsDiscoveryService.search()
+    val search = WsDiscoveryMessage().apply { addType("NetworkVideoTransmitter") }
+    val ws = WsDiscoveryService.search(search)
             .doOnNext { debug("WSSearch Result: ${it.packetAddress} ${it.hardware}") }
             .doOnCompleted { info("Completed WS-Discovery") }
             .subscribeOn(Schedulers.io())
