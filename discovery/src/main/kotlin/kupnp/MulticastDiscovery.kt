@@ -1,7 +1,7 @@
 package kupnp
 
 import okio.ByteString
-import rx.AsyncEmitter
+import rx.Emitter
 import rx.Observable
 import rx.Observable.*
 import rx.exceptions.Exceptions
@@ -152,7 +152,7 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
                         e.onNext(Observable.timer(rand.toLong(), TimeUnit.MILLISECONDS))
                     }
                     e.onCompleted()
-                }, AsyncEmitter.BackpressureMode.BUFFER))
+                }, Emitter.BackpressureMode.BUFFER))
                 .flatMap { sendMessage }
                 .subscribeOn(Schedulers.io())
                 .ignoreElements()

@@ -18,9 +18,9 @@ allprojects {
         maven { url "https://dl.bintray.com/kotlin/kotlin-eap/" }
     }
 
-    ext.okioVersion = '1.10.0'
-    ext.rxjavaVersion = '1.2.0'
-    ext.okhttpVersion = "3.4.1"
+    ext.okioVersion = '1.11.0'
+    ext.rxjavaVersion = '1.2.2'
+    ext.okhttpVersion = "3.4.2"
     ext.retrofitVersion = "2.1.0"
     ext.truthVersion = '0.28'
     ext.junitVersion = '4.12'
