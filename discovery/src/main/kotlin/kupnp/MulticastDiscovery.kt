@@ -143,7 +143,7 @@ class MulticastDiscovery(private val discoveryRequest: MulticastDiscoveryRequest
                 }
 
         return concat(
-                fromEmitter<Observable<Long>>({ e ->
+                create<Observable<Long>>({ e ->
                     val r = Random()
                     // Fire first message straight away
                     e.onNext(Observable.just(0L))
