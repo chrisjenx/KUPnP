@@ -10,7 +10,7 @@ import org.simpleframework.xml.convert.AnnotationStrategy
 import org.simpleframework.xml.core.Persister
 import org.simpleframework.xml.stream.Format
 import org.simpleframework.xml.stream.Verbosity
-import retrofit2.adapter.rxjava.HttpException
+import retrofit2.HttpException
 
 /**
  * Created by chris on 22/09/2016.
